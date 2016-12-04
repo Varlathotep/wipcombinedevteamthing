@@ -1,26 +1,38 @@
 <?php
 
-namespace MineManagement; 
-class Terrains implements Stored {
-	use Commitable;
-	public $refid;
-	public $planetid;
-	public $terrainid;
-	public $x;
-	public $y;
-	public $image;
-	private $_database = null;
+namespace MineManagement;
 
-	public function __construct($database) {
-		$this->_database = $database;
-	}
-
-	public function update() {
+class Terrains {
+	private function __construct() {
 
 	}
 
-	public function insert() {
-
+	public static function get($id = null) {
+		$database = Database::getConnection();
+		$stmt = null;
+		$returnedTerrain = null;
+		if (\is_numeric($id)) {
+			$stmt = $database->prepare('SELECT id, name, image FROM terrains WHERE id = ?');
+			$stmt->bind_param('i', $id);
+		}
+		else if (\is_string($id)) {
+			$stmt = $database->prepare('SELECT id, name, image FROM terrains WHERE name = ?');
+			$stmt->bind_param('s', $id);
+		}
+		else if (\is_null($id)) {
+			$stmt = $database->prepare('SELECT id, name, image FROM terrains');
+			$returnedTerrain = [];
+		}
+		$stmt->execute();
+		$result = $stmt->get_result();
+		while ($row = $result->fetch_assoc()) {
+			if (is_array($returnedTerrain)) {
+				$returnedTerrain[] = $row;
+			}
+			else {
+				$returnedTerrain = $row;
+			}
+		}
+		return $returnedTerrain;
 	}
 }
-
