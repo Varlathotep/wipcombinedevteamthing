@@ -1,0 +1,64 @@
+body {
+	margin: 0;
+	padding: 0;
+	background-color: black;
+	color: #ccc;
+}
+
+div.container {
+	width: 95%;
+	margin: auto;
+}
+
+div.managementBar {
+	width: 100%;
+	font-size: 1.5em;
+	text-align: center;
+	background-color: #111;
+	padding: .5em;
+	margin-bottom: .5em;
+	box-sizing: border-box;
+}
+
+a {
+	color: #ddd;
+	text-decoration: none;
+}
+
+div.managementBar > a:not(:first-child):before {
+	content: ' | ';
+}
+
+div.clearfix:after {
+	content: " ";
+}
+
+div.invisible {
+	display: none;
+}
+
+div.planetContainer {
+	clear: none; 
+	float: left;
+	width: 33%;
+	background-color: #252525;
+}
+
+div.planetNamePlaque {
+	clear: both;
+	float: none;
+	width: 75%;
+	margin: auto;
+	text-align: center;
+}
+
+table, tr, td {
+	text-align: center;
+	font-size: 0px;
+	border-collapse: collapse;
+	margin: auto;
+    padding: 0px;
+    border: 0px;
+    border-spacing: 0;
+}
+
