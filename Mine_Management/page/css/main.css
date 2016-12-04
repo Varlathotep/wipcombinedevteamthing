@@ -29,8 +29,13 @@ div.managementBar > a:not(:first-child):before {
 	content: ' | ';
 }
 
-div.clearfix:after {
+.clearfix:after {
 	content: " ";
+	clear: both;
+	visibility: hidden;
+	font-size: 0;
+	height: 0;
+	display: block;
 }
 
 div.invisible {
