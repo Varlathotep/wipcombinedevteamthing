@@ -3,7 +3,7 @@
 namespace MineManagement;
 trait Commitable {
 	public function commit() {
-		if (is_numeric($this->id)) {
+		if (isset($this->id) || isset($this->refid)) {
 			$this->update();
 		}
 		else {

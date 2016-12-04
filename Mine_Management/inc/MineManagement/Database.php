@@ -2,7 +2,7 @@
 
 namespace MineManagement {
 	class Database {
-		private $_conn = null;
+		private static $_conn = null;
 
 		/**
 			Creates the Database object which will be used by multiple other classes to manage their database calls.
@@ -11,112 +11,12 @@ namespace MineManagement {
 			@param		$password		The password of the mysql database.
 			@param		$database		The database being accessed.
 		*/
-		public function __construct($hostname, $username, $password, $database) {
-			$this->_conn = new \mysqli($hostname, $username, $password, $database);
+		public static function createConnection($hostname, $username, $password, $database) {
+			SELF::$_conn = new \mysqli($hostname, $username, $password, $database);
 		}
 
-		/**
-			This will populate the database with an initial set of tables and some base data for material types and terrain types.
-		*/
-		public function initializeDatabase() {
-			$this->_conn->query(file_get_contents('inc/initialdata.sql'));
-		}
-
-		/**
-			This will insert a new planet into the database with the given name, width, height and sorted single dimension array of Terrains objects.
-			@param		$planet			A Planets object containing the definition of the newly created planet.
-		*/
-		public function insertPlanet($planet) {
-			$planetStatement = $this->_conn->prepare('INSERT INTO planets (name, width, height) VALUE (?, ?, ?);');
-			$terrainStatement = $this->_conn->prepare('INSERT INTO planetterrains (planetid, terrainid, x, y) VALUE (?, ?, ?, ?);');
-			$planetStatement->bind_param('sii', $planet->name, $planet->width, $planet->height);
-			$planetStatement->execute();
-			$planet->id = $this->_conn->insert_id;
-			//We need to loop over the planet's terrain so that they can all be entered into the database sequentially. The site itself doesn't care if the data has an X and Y value.
-			for ($i = 0, $l = $planet->height; $i < $l; $i++) {
-				for ($i2 = 0; $i2 < $l; $i2++) {
-					$terrain = $planet->terrain[$i][$i2];
-					$terrain->planetid = $planet->id;
-					$terrainStatement->bind_param('iiii', $terrain->planetid, $terrain->terrainid, $terrain->x, $terrain->y);
-					$terrainStatement->execute();
-					$terrain->refid = $this->_conn->insert_id;
-				}
-			}
-		}
-
-		/**
-			This will select a planet from the database with either the given name or id and its sorted single dimension array of Terrain objects.
-			@param		$planetNameOrId	The name or ID of the planet being searched for.
-			@return						An array of planets matching the search criteria.
-		*/
-		public function selectPlanet($planetNameOrId) {
-			$planetStatement = null;
-			$terrainStatement = $this->_conn->prepare('SELECT refid, planetid, terrainid, image FROM planetterrains INNER JOIN terrains ON id = terrainid WHERE planetid = ? ORDER BY refid;');
-			$returnedPlanets = [];
-			//We need to determine whether or not the passed value is an int, string, or null, then prepare the correct statement for it.
-			if (\is_numeric($planetNameOrId)) {
-				$planetStatement = $this->_conn->prepare('SELECT id, name, width, height FROM planets WHERE id = ?;');
-				$planetStatement->bind_param('i', $planetNameOrId);
-			}
-			else if (\is_string($planetNameOrId)) {
-				$planetStatement = $this->_conn->prepare('SELECT id, name, width, height FROM planets WHERE name = ?;');
-				$planetStatement->bind_param('s', $planetNameOrId);
-			}
-			else {
-				$planetStatement = $this->_conn->prepare('SELECT id, name, width, height FROM planets;');
-			}
-			$planetStatement->execute();
-			$result = $planetStatement->get_result();
-			//We're checking to make sure the statement executed properly. We'll need to do some error handling after this maybe?
-			if ($result) {
-				//We're going to loop over the result set and put the data into a "MineManagement\Planets" object.
-				while ($row = $result->fetch_object('MineManagement\Planets', [ $this ])) {
-					$returnedPlanets[] = $row;
-					$terrainStatement->bind_param('i', $row->id);
-					$terrainStatement->execute();
-					$terrainResult = $terrainStatement->get_result();
-					//Similar to the planet loop, we're going to loop over the result set and put the data into a "MineManagement\Terrains" object.
-					$this->selectPlanetTerrain($row);
-					$row->deposits = $this->selectPlanetDeposit($row->id);
-				}
-			}
-			return $returnedPlanets;
-		}
-
-		/**
-			This will delete a SINGLE planet from the database. If you wish to empty the database, please use Database::deleteAllPlanets(void) instead.
-			@param		$planetNameOrId	The name or ID of the planet being searched for.
-		*/
-		public function deletePlanet($planet) {
-			$planetStatement = null;
-			//We need to determine whether or not the passed value is an int, string or null, then prepare the correct statement or throw an error in the case of a null/object.
-			if (\is_numeric($planet)) {
-				$planetStatement = $this->_conn->prepare('DELETE FROM planets WHERE id = ?;');
-				$planetStatement->bind_param('i', $planet);
-			}
-			else if (\is_string($planet)) {
-				$planetStatement = $this->_conn->prepare('DELETE FROM planets WHERE name = ?;');
-				$planetStatement->bind_param('s', $planet);
-			}
-			else if (\is_object($planet)) {
-				$planetStatement = $this->_conn->prepare('DELETE FROM planets WHERE id = ?;');
-				$planetStatement->bind_param('i', $planet->id);
-			}
-			else {
-				throw new \Exception('No ID or planet name was provided! This would delete all planets in the database! Please use deleteAllPlanets for this!');
-			}
-			//We only need to execute the statement. Nothing will be returned outside of the number of rows deleted, which isn't too hugely important.
-			$planetStatement->execute();
-		}
-
-		/**
-			This will update a SINGLE planet from the database.
-			@param		$planet	The planet object containing the definition of the planet.
-		*/
-		public function updatePlanet($planet) {
-			$planetStatement = $this->_conn->prepare('UPDATE planets SET name = ?, width = ?, height = ? WHERE id = ?;');
-			$planetStatement->bind_param('siii', $planet->name, $planet->width, $planet->height, $planet->id);
-			$planetStatement->execute();
+		public static function getConnection() {
+			return SELF::$_conn;
 		}
 
 		public function insertTerrain($terrain) {
