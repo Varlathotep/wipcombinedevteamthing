@@ -10,7 +10,7 @@ namespace MineManagement {
 		$route = \explode('/', \trim($_GET['q'], "/\t\n\r\0\x0B"));
 	}
 	//We're going to set up the database connection and then we're going to go to town.
-	$database = new Database('localhost', 'root', 'Undeaddrakex1122', 'minemanagement2');
+	$database = new Database('localhost', 'user', 'pass', 'minemanagement2');
 	if (count($_POST) > 0 && array_key_exists('planetEditor', $_POST)) {
 		$planet = new Planets($database);
 		$planet->name = $_POST['name'];
