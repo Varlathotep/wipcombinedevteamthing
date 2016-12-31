@@ -3,35 +3,26 @@
 namespace MineManagement;
 
 class Terrains {
-	private function __construct() {
+	use Getable;
 
-	}
-
-	public static function get($id = null) {
+	public static function select($id) {
 		$database = Database::getConnection();
 		$stmt = null;
-		$returnedTerrain = null;
-		if (\is_numeric($id)) {
-			$stmt = $database->prepare('SELECT id, name, image FROM terrains WHERE id = ?');
-			$stmt->bind_param('i', $id);
+		$returnedTerrain = [];
+		if (\is_array($id) && \count($id) > 0) {
+			$query = 'SELECT id, name, image FROM terrains WHERE id ';
+			$params = null;
+			list($query, $params) = self::generateInParamStatement($query, $id);
+			$stmt = $database->prepare($query);
+			\call_user_func_array([$stmt, 'bind_param'], self::refParams($params));
 		}
-		else if (\is_string($id)) {
-			$stmt = $database->prepare('SELECT id, name, image FROM terrains WHERE name = ?');
-			$stmt->bind_param('s', $id);
-		}
-		else if (\is_null($id)) {
+		else {
 			$stmt = $database->prepare('SELECT id, name, image FROM terrains');
-			$returnedTerrain = [];
 		}
 		$stmt->execute();
 		$result = $stmt->get_result();
 		while ($row = $result->fetch_assoc()) {
-			if (is_array($returnedTerrain)) {
-				$returnedTerrain[] = $row;
-			}
-			else {
-				$returnedTerrain = $row;
-			}
+			$returnedTerrain[] = $row;
 		}
 		return $returnedTerrain;
 	}

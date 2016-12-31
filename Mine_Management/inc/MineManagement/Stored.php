@@ -6,5 +6,5 @@ interface Stored {
 	function update();
 	function insert();
 	function remove();
-	static function get($id = null);
+	static function select($id = null);
 }
