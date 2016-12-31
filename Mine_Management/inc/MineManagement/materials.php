@@ -3,8 +3,9 @@
 namespace MineManagement;
 class Materials implements Stored {
 	use Commitable;
+	use Getable;
 
-	public static function get($materialId = null) {
+	public static function select($materialId = null) {
 
 	}
 
@@ -17,6 +18,10 @@ class Materials implements Stored {
 	}
 
 	public function update() {
+
+	}
+
+	public function commit() {
 
 	}
 }

@@ -1,5 +1,5 @@
 <?php
-namespace MineManagement; 
+namespace MineManagement;
 error_reporting(E_ALL & ~E_DEPRECATED);
 include('inc/autoloader.php');
 $route = [];
@@ -8,7 +8,7 @@ if (\array_key_exists('q', $_GET)) {
 	$route = \explode('/', \trim($_GET['q'], "/\t\n\r\0\x0B"));
 }
 //We're going to set up the database connection and then we're going to go to town.
-Database::createConnection('localhost', 'user', 'password', 'minemanagement2');
+Database::createConnection('localhost', 'root', 'Undeaddrakex1122', 'minemanagement2');
 if (\count($route) === 0) {
 	require_once('page/index.html');
 }
@@ -38,6 +38,7 @@ else if ($route[0] == 'planets') {
 				}
 			}
 			$planet->commit();
+			var_dump($planet);
 	}
 	else if ($route[1] == 'update') {
 
