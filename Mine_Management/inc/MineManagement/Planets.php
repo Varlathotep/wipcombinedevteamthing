@@ -44,16 +44,20 @@ class Planets implements Stored {
 	return $returnedPlanets;
   }
 
-  public function remove() {
+  public function delete() {
 	$stmt = $this->_database->prepare('DELETE FROM planets WHERE id = ?;');
 	$stmt->bind_param('i', $this->id);
 	$stmt->execute();
+	$this->commitTerrain();
+	$this->commitDeposits();
   }
 
   public function update() {
 	$stmt = $this->_database->prepare('UPDATE planets SET name = ?, width = ?, height = ? WHERE id = ?');
 	$stmt->bind_param('siii', $this->name, $this->width, $this->height, $this->id);
 	$stmt->execute();
+	$this->commitTerrain();
+	$this->commitDeposits();
   }
 
   public function insert() {
@@ -62,14 +66,28 @@ class Planets implements Stored {
 	$stmt->execute();
 	$this->id = $this->_database->insert_id;
 	$this->commitTerrain();
+	$this->commitDeposits();
   }
 
   private function commitTerrain() {
+	if (\is_array($this->terrain)) {
+	  for ($i = 0, $l = $this->height; $i < $l; $i++) {
+		for ($i2 = 0; $i2 < $l; $i2++) {
+		  $terrain = $this->terrain[$i][$i2];
+		  $terrain->planetid = $this->id;
+		  if ($this->_markForDelete) {
+			$terrain->markForDelete();
+		  }
+		  $terrain->commit();
+		}
+	  }
+	}
+  }
+
+  private function commitDeposits() {
 	for ($i = 0, $l = $this->height; $i < $l; $i++) {
 	  for ($i2 = 0; $i2 < $l; $i2++) {
-		$terrain = $this->terrain[$i][$i2];
-		$terrain->planetid = $this->id;
-		$terrain->commit();
+
 	  }
 	}
   }

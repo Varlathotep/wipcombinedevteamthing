@@ -3,25 +3,34 @@
 namespace MineManagement;
 
 trait Commitable {
-	private $_markForDelete = false;
+  private $_markForDelete = false;
 
-	public function markForDelete() {
-		$this->_markForDelete = true;
-	}
+  public function markForDelete() {
+	$this->_markForDelete = true;
+  }
 
-	public function commit() {
-		$idAvailable = \is_numeric($this->id);
-		if (!$idAvailable) {
-			$idAvailable = \is_numeric($this->refId);
-		}
-		if ($idAvailable && $this->_markForDelete) {
-			$this->delete();
-		}
-		else if ($idAvailable) {
-			$this->update();
-		}
-		else {
-			$this->insert();
-		}
+  public function getId() {
+	if (isset($this->id)) {
+	  return $this->id;
 	}
+	else if (isset($this->refid)) {
+	  return $this->refid;
+	}
+	else {
+	  return null;
+	}
+  }
+
+  public function commit() {
+	$idAvailable = \is_numeric($this->getId());
+	if ($idAvailable && $this->_markForDelete) {
+	  $this->delete();
+	}
+	else if ($idAvailable) {
+	  $this->update();
+	}
+	else if (!$this->_markForDelete) {
+	  $this->insert();
+	}
+  }
 }

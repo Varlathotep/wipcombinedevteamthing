@@ -5,7 +5,7 @@ class PlanetTerrains implements Stored {
   use Commitable;
   use Getable;
 
-  public $id;
+  public $refid;
   public $planetid;
   public $terrainid;
   public $x;
@@ -35,13 +35,11 @@ class PlanetTerrains implements Stored {
 	  }
 	  $returnedTerrain[$row->y][$row->x] = $row;
 	}
-	if (\count($returnedTerrain) == 1) {
-	  $returnedTerrain = [$returnedTerrain];
-	}
+	$returnedTerrain = [$returnedTerrain];
 	return $returnedTerrain;
   }
 
-  public function remove() {
+  public function delete() {
 	$stmt = $this->_database->prepare('DELETE FROM planetterrains WHERE refid = ?');
 	$stmt->bind_param('i', $this->refid);
 	$stmt->execute();
@@ -57,6 +55,7 @@ class PlanetTerrains implements Stored {
 	$stmt = $this->_database->prepare('INSERT INTO planetterrains (planetid, terrainid, x, y) VALUES (?, ?, ?, ?)');
 	$stmt->bind_param('iiii', $this->planetid, $this->terrainid, $this->x, $this->y);
 	$stmt->execute();
+	$this->refid = $this->_database->insert_id;
   }
 }
 
