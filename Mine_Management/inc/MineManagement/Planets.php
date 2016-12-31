@@ -23,11 +23,8 @@ class Planets implements Stored {
 	$database = Database::getConnection();
 	//We need to determine whether or not the passed value is an int, string, or null, then prepare the correct statement for it.
 	if (\is_array($planetNameOrId) && \count($planetNameOrId) > 0) {
-	  $query = 'SELECT id, name, width, height FROM planets WHERE id ';
-	  $params = null;
-	  list($query, $params) = self::generateInParamStatement($query, $planetNameOrId);
+	  $query = 'SELECT id, name, width, height FROM planets WHERE id IN (' . \implode(',', $planetNameOrId) . ')';
 	  $stmt = $database->prepare($query);
-	  \call_user_func_array([$stmt, 'bind_param'], self::refParams($params));
 	}
 	else {
 	  $stmt = $database->prepare('SELECT id, name, width, height FROM planets');
@@ -45,7 +42,7 @@ class Planets implements Stored {
   }
 
   public function delete() {
-	$stmt = $this->_database->prepare('DELETE FROM planets WHERE id = ?;');
+	$stmt = $this->_database->prepare('DELETE FROM planets WHERE id = ?');
 	$stmt->bind_param('i', $this->id);
 	$stmt->execute();
 	$this->commitTerrain();
@@ -71,8 +68,8 @@ class Planets implements Stored {
 
   private function commitTerrain() {
 	if (\is_array($this->terrain)) {
-	  for ($i = 0, $l = $this->height; $i < $l; $i++) {
-		for ($i2 = 0; $i2 < $l; $i2++) {
+	  for ($i = 0; $i < $this->height; $i++) {
+		for ($i2 = 0; $i2 < $this->width; $i2++) {
 		  $terrain = $this->terrain[$i][$i2];
 		  $terrain->planetid = $this->id;
 		  if ($this->_markForDelete) {
@@ -85,8 +82,8 @@ class Planets implements Stored {
   }
 
   private function commitDeposits() {
-	for ($i = 0, $l = $this->height; $i < $l; $i++) {
-	  for ($i2 = 0; $i2 < $l; $i2++) {
+	for ($i = 0; $i < $this->height; $i++) {
+	  for ($i2 = 0; $i2 < $this->width; $i2++) {
 
 	  }
 	}

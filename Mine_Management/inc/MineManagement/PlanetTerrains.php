@@ -21,11 +21,8 @@ class PlanetTerrains implements Stored {
 	$returnedTerrain = [];
 	$stmt = null;
 	if (\is_array($id) && \count($id) > 0) {
-	  $query = 'SELECT refid, planetid, terrainid, x, y FROM planetterrains WHERE planetid ';
-	  $params = null;
-	  list($query, $params) = self::generateInParamStatement($query, $id);
+	  $query = 'SELECT refid, planetid, terrainid, x, y FROM planetterrains WHERE planetid IN (' . \implode(',', $id) . ')';
 	  $stmt = $database->prepare($query);
-	  \call_user_func_array([$stmt, 'bind_param'], self::refParams($params));
 	}
 	$stmt->execute();
 	$result = $stmt->get_result();

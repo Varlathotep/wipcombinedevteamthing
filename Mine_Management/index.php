@@ -39,8 +39,8 @@ else if ($route[0] == 'planets') {
 	}
 	$planet->commit();
   }
-  else if ($route[1] == 'update') {
-
+  else if ($route[1] == 'add' && \count($_POST) > 0 && \array_key_exists('planetEditor', $_POST) && !empty($_POST['planetid'])) {
+	var_dump($_POST);
   }
   else if ($route[1] == 'delete') {
 	$success = true;
@@ -66,7 +66,7 @@ else if ($route[0] == 'planets') {
 		$success = false;
 	  }
 	}
-	return \json_encode([ $success ]);
+	echo \json_encode([ $success ]);
   }
 }
 else if ($route[0] == 'terraintypes') {

@@ -17,7 +17,7 @@
 		</div>
 		<button type="submit">Save Planet</button>
 		<input name="planetEditor" type="hidden" />
-		<input name="planetid" type="hidden" />
+		<input name="planetid" id="planetid" type="hidden" />
 	  </form>
 	</div>
 	<div id="content" class="clearfix invisible">
@@ -27,114 +27,10 @@
   <div id="planetTemplate" class="planetContainer invisible clearfix">
 	<div id="name" class="planetNamePlaque clearfix"></div>
 	<div id="map" class="clearfix"></div>
-	<a id="delete" href="" onclick="return false;">Delete Planet</a>
+	<a id="delete" href="" onclick="return false;">Delete Planet</a> | <a id="edit" href="" onclick="return false;">Edit Planet</a>
+	<input type="hidden" id="index" />
   </div>
-  <script>
-var planetTemplate = jQuery('#planetTemplate'),
-	content = jQuery('#content'),
-	planetEditor = jQuery('#planetEditor'),
-	sizeSelector = planetEditor.find('#size'),
-	terrainTypes = null;
-
-jQuery.ajax({
-url: '?q=/terraintypes',
-complete: function terrainTypesDownloadComplete(context) {
-terrainTypes = jQuery.parseJSON(context.responseText);
-sizeSelector.trigger('change');
-}
-});
-
-for (i = 1; i <= 20; i++) {
-  sizeSelector.append(jQuery('<option></option>').val(i).text(i));
-}
-
-jQuery('#addplanet').click(function addPlanetClick () {
-	planetEditor.removeClass('invisible');
-	content.addClass('invisible');
-	});
-
-sizeSelector.change(function sizeSelectorChange() {
-	planetEditor.find('#map').empty();
-	console.log('here');
-	var table = jQuery('<table style="width: 100%;"></table>');
-	planetEditor.find('#map').append(table);
-	for (i = 0; i < sizeSelector.val(); i++) {
-	var row = jQuery('<tr></tr>');
-	table.append(row);
-	for (i2 = 0; i2 < sizeSelector.val(); i2++) {
-	var cell = jQuery('<td></td>');
-	row.append(cell);
-	var ddl = jQuery('<select style="width: 100%;" name="planetGrid[' + i + '][' + i2 + ']"></select>');
-	cell.append(ddl);
-	for (i3 = 0, l = terrainTypes.length; i3 < l; i3++) {
-	var option = jQuery('<option></option>');
-	option.text(terrainTypes[i3].name);
-	option.val(terrainTypes[i3].id);
-	option.attr('data-image', terrainTypes[i3].image);
-	ddl.append(option);
-	}
-	ddl.change(function terrainSelectorChange() {
-	  jQuery(this).css('background-image', 'url(' + jQuery(this).find(':selected').attr('data-image') + ')');
-		});
-	  ddl.trigger('change');
-	  }
-	  }
-	  });
-
-jQuery('#manageplanets').click(managePlanetsClick);
-
-function renderPlanet(planet) {
-  var workingPlanetTemplate = planetTemplate.clone();
-  workingPlanetTemplate.find('#name').text(planet.name);
-  workingPlanetTemplate.removeClass('invisible');
-  content.append(workingPlanetTemplate);
-  var table = workingPlanetTemplate.children('#map').append('<table></table>').children('table'),
-	  node = 0;
-  for (wHeight = 0, height = planet.height; wHeight < height; wHeight++) {
-	var row = jQuery('<tr></tr>');
-	table.append(row);
-	for (wWidth = 0, width = planet.width; wWidth < width; wWidth++) {
-	  var cell = jQuery('<td></td>'),
-		  img = jQuery('<img />').attr('src', terrainTypes[planet.terrain[wHeight][wWidth].terrainid].image).css('width', '100%').css('height', 'auto');
-	  row.append(cell);
-	  cell.append(img);
-	}
-  }
-  workingPlanetTemplate.children('#delete').click(function deletePlanet() {
-	  jQuery.ajax({
-accepts: 'application/json',
-async: true,
-url: '?q=/planets/delete/' + planet.id,
-complete: managePlanetsDeleteComplete
-});
-	  });
-}
-
-function managePlanetsDeleteComplete(context, status) {
-  var success = jQuery.parseJSON(context.responseText);
-  if (success[0]) {
-	jQuery(this).remove();
-  }
-}
-
-function managePlanetsClick() {
-  jQuery.ajax({
-accepts: 'application/json',
-async: true,
-url: '?q=/planets/return/all',
-complete: managePlanetsDownloadComplete
-});
-}
-
-function managePlanetsDownloadComplete(context, status) {
-  content.empty();
-  content.removeClass('invisible');
-  planetEditor.addClass('invisible');
-  var planets = jQuery.parseJSON(context.responseText);
-  for (i = 0, l = planets.length; i < l; i++) {
-	renderPlanet(planets[i]);
-  }
-}
+  <script src="page/js/standard.js">
   </script>
-  </body>
-  </html>
+</body>
+</html>
