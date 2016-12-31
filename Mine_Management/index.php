@@ -8,7 +8,7 @@ if (\array_key_exists('q', $_GET)) {
   $route = \explode('/', \trim($_GET['q'], "/\t\n\r\0\x0B"));
 }
 //We're going to set up the database connection and then we're going to go to town.
-Database::createConnection('localhost', 'root', 'Undeaddrakex1122', 'minemanagement2');
+Database::createConnection('localhost', 'root', 'password', 'minemanagement2');
 if (\count($route) === 0) {
   require_once('page/index.html');
 }
