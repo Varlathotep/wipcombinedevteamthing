@@ -14,6 +14,7 @@ class Planets extends Debuggable implements Stored {
   public $deposits = [];
 
   public function __construct() {
+	//We need to get a database connection from the Database object.
 	$this->_database = Database::getConnection();
   }
 
@@ -21,7 +22,9 @@ class Planets extends Debuggable implements Stored {
 	$stmt = null;
 	$returnedPlanets = [];
 	$database = Database::getConnection();
-	//We need to determine whether or not the passed value is an int, string, or null, then prepare the correct statement for it.
+	//We're going to go ahead and determine if there was an array provided and if that array has more than 1 element.
+	//If it does, we need to implode them and then prepare the query. NOTE: ALWAYS CALL THE get METHOD AND NOT THIS
+	//METHOD DIRECTLY. THE GET METHOD WILL VERIFY THAT THE IDS ARE INTS AND WILL PREVENT THIS FROM BEING INJECTIBLE.
 	if (\is_array($planetNameOrId) && \count($planetNameOrId) > 0) {
 	  $query = 'SELECT id, name, width, height FROM planets WHERE id IN (' . \implode(',', $planetNameOrId) . ')';
 	  $stmt = $database->prepare($query);
@@ -29,9 +32,12 @@ class Planets extends Debuggable implements Stored {
 	else {
 	  $stmt = $database->prepare('SELECT id, name, width, height FROM planets');
 	}
+	//We need to execute the statement, get the result and determine if the result is set.
 	$stmt->execute();
 	$result = $stmt->get_result();
 	if ($result) {
+	  //We need to loop over the result set, fetching objects of the Planets type and settings its values to the correct
+	  //state.
 	  while ($row = $result->fetch_object('MineManagement\Planets')) {
 		$returnedPlanets[] = $row;
 		$row->terrain = PlanetTerrains::get($row->id);
@@ -42,25 +48,31 @@ class Planets extends Debuggable implements Stored {
   }
 
   public function delete() {
+	//We need to prepare the delete query, set its ID, and delete that sun of a gun from the database.
 	$stmt = $this->_database->prepare('DELETE FROM planets WHERE id = ?');
 	$stmt->bind_param('i', $this->id);
 	$stmt->execute();
+	//We are committing the terrain and deposits arrays.
 	$this->commitTerrain();
 	$this->commitDeposits();
   }
 
   public function update() {
+	//We need to prepare the update query, set its values, and update that son of a gun in the database.
 	$stmt = $this->_database->prepare('UPDATE planets SET name = ?, width = ?, height = ? WHERE id = ?');
 	$stmt->bind_param('siii', $this->name, $this->width, $this->height, $this->id);
 	$stmt->execute();
+	//We are committing the terrain and deposits arrays.
 	$this->commitTerrain();
 	$this->commitDeposits();
   }
 
   public function insert() {
+	//We need to prepare the insert query, set its values, and insert that son of a gun into the database.
 	$stmt = $this->_database->prepare('INSERT INTO planets (name, width, height) VALUE (?, ?, ?)');
 	$stmt->bind_param('sii', $this->name, $this->width, $this->height);
 	$stmt->execute();
+	//We're retrieving the id from the database and then committing the terrain and deposits arrays.
 	$this->id = $this->_database->insert_id;
 	$this->commitTerrain();
 	$this->commitDeposits();
@@ -75,6 +87,8 @@ class Planets extends Debuggable implements Stored {
 		  if (\array_key_exists($i, $this->terrain) && \array_key_exists($i2, $this->terrain[$i])) {
 			$terrain = $this->terrain[$i][$i2];
 			$terrain->planetid = $this->id;
+			//If the planet is marked for deletion, then all terrain under it should be as well (this is very
+			//likely never going to be needed if foreign keys are properly used).
 			if ($this->_markForDelete) {
 			  $terrain->markForDelete();
 			}
@@ -121,6 +135,7 @@ class Planets extends Debuggable implements Stored {
   }
 
   private function commitDeposits() {
+	//This is currently not implemented. It will be soon!
 	for ($i = 0; $i < $this->height; $i++) {
 	  for ($i2 = 0; $i2 < $this->width; $i2++) {
 

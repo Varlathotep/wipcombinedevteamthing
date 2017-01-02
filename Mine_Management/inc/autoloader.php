@@ -35,6 +35,7 @@ function autoloader($name) {
 	  }
 	}
   }
+  //We need to throw an exception if the autoloader can't find the class.
   if (!$found) {
 	throw new \Exception('The class ' . $name . ' could not be found. Please ensure that this class has a file created for it.');
   }

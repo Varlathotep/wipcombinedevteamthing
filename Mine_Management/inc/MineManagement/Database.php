@@ -4,13 +4,6 @@ namespace MineManagement;
 class Database {
   private static $_conn = null;
 
-		/**
-			Creates the Database object which will be used by multiple other classes to manage their database calls.
-			@param		$hostname		The host of the mysql database.
-			@param		$username		The username of the mysql database.
-			@param		$password		The password of the mysql database.
-			@param		$database		The database being accessed.
-		 */
   public static function createConnection($hostname, $username, $password, $database) {
 	SELF::$_conn = new \mysqli($hostname, $username, $password, $database);
   }
@@ -19,6 +12,7 @@ class Database {
 	return SELF::$_conn;
   }
 
+  //Everything after this point needs to be migrated to their appropriate object.
   public function insertDeposit($deposit) {
 	$depositStatement = $this->_conn->prepare('INSERT INTO deposits (planetid, terrainrefid, materialid, quantity) VALUES (?, ?, ?, ?);');
 	$depositStatement->bind_param('iiii', $deposit->planetid, $deposit->terrainrefid, $deposit->materialid, $deposit->quantity);
