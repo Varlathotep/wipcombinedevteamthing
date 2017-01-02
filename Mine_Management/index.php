@@ -76,7 +76,7 @@ else if ($route[0] == 'planets') {
 	}
 	else {
 	  try {
-		$planet = Planets::get(\intval($route[2]));
+		$planet = Planets::get($route[2]);
 		$planet->markForDelete();
 		$planet->commit();
 	  }
