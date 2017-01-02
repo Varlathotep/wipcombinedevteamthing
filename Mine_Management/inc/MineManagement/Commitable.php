@@ -3,7 +3,7 @@
 namespace MineManagement;
 
 trait Commitable {
-  private $_markForDelete = false;
+  public $_markForDelete = false;
 
   public function markForDelete() {
 	$this->_markForDelete = true;

@@ -27,20 +27,36 @@ else if ($route[0] == 'planets') {
 	$planet->width = $_POST['size'];
 	$planet->height = $_POST['size'];
 	for ($i = 0, $l = $planet->height; $i < $l; $i++) {
-	  $array = [];
-	  $planet->terrain[] = $array;
 	  for ($i2 = 0; $i2 < $l; $i2++) {
-		$terrain = new PlanetTerrains();
-		$terrain->x = $i2;
-		$terrain->y = $i;
-		$terrain->terrainid = $_POST['planetGrid'][$i][$i2];
-		$planet->terrain[$i][$i2] = $terrain;
+		$planet->updateTerrain($_POST['planetGrid'][$i][$i2], $i2, $i);
 	  }
 	}
 	$planet->commit();
   }
   else if ($route[1] == 'add' && \count($_POST) > 0 && \array_key_exists('planetEditor', $_POST) && !empty($_POST['planetid'])) {
-	var_dump($_POST);
+	$workingPlanet = Planets::get($_POST['planetid']);
+	if ($workingPlanet->width > $_POST['size']) {
+	  for ($i = 0; $i < $workingPlanet->height; $i++) {
+		for ($i2 = 0; $i2 < $workingPlanet->width; $i2++) {
+		  if ($i2 > ($_POST['size'] - 1) || $i > ($_POST['size'] - 1)) {
+			$workingPlanet->deleteTerrain($i2, $i);
+		  }
+		  else {
+			$workingPlanet->updateTerrain($_POST['planetGrid'][$i][$i2], $i2, $i);
+		  }
+		}
+	  }
+	}
+	else if ($workingPlanet->width < $_POST['size']) {
+	  for ($i = 0; $i < $_POST['size']; $i++) {
+		for ($i2 = 0; $i2 < $_POST['size']; $i2++) {
+		  $workingPlanet->updateTerrain($_POST['planetGrid'][$i][$i2], $i2, $i);
+		}
+	  }
+	}
+	$workingPlanet->width = $workingPlanet->height = (int)$_POST['size'];
+	$workingPlanet->commit();
+	var_dump(Database::getConnection());
   }
   else if ($route[1] == 'delete') {
 	$success = true;

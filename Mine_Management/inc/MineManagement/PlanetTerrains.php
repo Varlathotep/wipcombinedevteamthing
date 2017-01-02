@@ -1,7 +1,7 @@
 <?php
 
 namespace MineManagement; 
-class PlanetTerrains implements Stored {
+class PlanetTerrains extends Debuggable implements Stored {
   use Commitable;
   use Getable;
 
@@ -44,7 +44,7 @@ class PlanetTerrains implements Stored {
 
   public function update() {
 	$stmt = $this->_database->prepare('UPDATE planetterrains SET terrainid = ?, x = ?, y = ? WHERE refid = ?');
-	$stmt->bind_param('iii', $this->terrainid, $this->x, $this->y, $this->refid);
+	$stmt->bind_param('iiii', $this->terrainid, $this->x, $this->y, $this->refid);
 	$stmt->execute();
   }
 
