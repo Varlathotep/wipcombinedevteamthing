@@ -11,7 +11,6 @@ class Planets extends Debuggable implements Stored {
   public $height;
   public $name;
   public $terrain = [];
-  public $deposits = [];
 
   public function __construct() {
 	//We need to get a database connection from the Database object.
@@ -41,7 +40,6 @@ class Planets extends Debuggable implements Stored {
 	  while ($row = $result->fetch_object('MineManagement\Planets')) {
 		$returnedPlanets[] = $row;
 		$row->terrain = PlanetTerrains::get($row->id);
-		$row->deposits = Materials::get($row->id);
 	  }
 	}
 	return $returnedPlanets;
@@ -64,7 +62,6 @@ class Planets extends Debuggable implements Stored {
 	$stmt->execute();
 	//We are committing the terrain and deposits arrays.
 	$this->commitTerrain();
-	$this->commitDeposits();
   }
 
   public function insert() {
@@ -75,7 +72,6 @@ class Planets extends Debuggable implements Stored {
 	//We're retrieving the id from the database and then committing the terrain and deposits arrays.
 	$this->id = $this->_database->insert_id;
 	$this->commitTerrain();
-	$this->commitDeposits();
   }
 
   private function commitTerrain() {
@@ -115,6 +111,28 @@ class Planets extends Debuggable implements Stored {
 	$this->terrain[$y][$x] = $workingTerrain;
   }
 
+  public function updateDeposit($materialId, $quantity, $x, $y) {
+	if (\array_key_exists($y, $this->terrain) && \array_key_exists($x, $this->terrain[$y])) {
+	  $deposit = $this->terrain[$y][$x]->deposit;
+	  if (\is_array($deposit) && \count($deposit) == 1) {
+		if ($materialId === '0') {
+		  $deposit[$this->terrain[$y][$x]->refid]->markForDelete();
+		}
+		else {
+		  $deposit[$this->terrain[$y][$x]->refid]->materialid = $materialId;
+		  $deposit[$this->terrain[$y][$x]->refid]->quantity = $quantity;
+		}
+	  }
+	  else if ($materialId !== '0') {
+		$deposit = new Deposits();
+		$deposit->materialid = $materialId;
+		$deposit->quantity = $quantity;
+		$deposit->planetid = $this->id;
+		$this->terrain[$y][$x]->deposit = $deposit;
+	  }
+	}
+  }
+
   public function deleteTerrain($x, $y) {
 	//This isn't the best option here, but it allows us to silently delete broken planets (which
 	//is preferred over crashing!).
@@ -131,15 +149,6 @@ class Planets extends Debuggable implements Stored {
 	}
 	else {
 	  $this->addTerrain($terrainId, $x, $y);
-	}
-  }
-
-  private function commitDeposits() {
-	//This is currently not implemented. It will be soon!
-	for ($i = 0; $i < $this->height; $i++) {
-	  for ($i2 = 0; $i2 < $this->width; $i2++) {
-
-	  }
 	}
   }
 }

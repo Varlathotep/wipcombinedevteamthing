@@ -13,6 +13,19 @@ Database::createConnection('localhost', 'root', 'password', 'minemanagement2');
 if (\count($route) === 0) {
   require_once('page/index.html');
 }
+else if ($route[0] == 'material') {
+  if ($route[1] == 'save') {
+	$planet = Planets::get($_POST['planetId']);
+	for ($i = 0; $i < \count($_POST['materialGrid']); $i++) {
+	  for ($i2 = 0; $i2 < \count($_POST['materialGrid'][$i]); $i2++) {
+		$matId = $_POST['materialGrid'][$i][$i2];
+		$quantity = $_POST['quantity'][$i][$i2];
+		$planet->updateDeposit($matId, $quantity, $i2, $i);
+	  }
+	}
+	$planet->commit();
+  }
+}
 else if ($route[0] == 'planets') {
   //We need to determine if a return, add or removal is being called and handle the call correctly.
   if ($route[1] == 'return') {
@@ -25,23 +38,15 @@ else if ($route[0] == 'planets') {
 	  echo \json_encode(Planets::get($route[2]));
 	}
   }
-  else if ($route[1] == 'add' && \count($_POST) > 0 && \array_key_exists('planetEditor', $_POST) && empty($_POST['planetid'])) {
-	//We need to create a new planet and set its parameters. We then need to generate the terrain and, once its generated,
-	//we need to commit it to the database.
-	$planet = new Planets();
-	$planet->name = $_POST['name'];
-	$planet->width = $_POST['size'];
-	$planet->height = $_POST['size'];
-	for ($i = 0, $l = $planet->height; $i < $l; $i++) {
-	  for ($i2 = 0; $i2 < $l; $i2++) {
-		$planet->updateTerrain($_POST['planetGrid'][$i][$i2], $i2, $i);
-	  }
+  else if ($route[1] == 'add' && \count($_POST) > 0 && \array_key_exists('planetEditor', $_POST)) {
+	//We need to grab the edited/added planet and set its parameters. We then need to modify the terrain as need be and commit it.
+	if (!empty($_POST['planetid'])) {
+	  $workingPlanet = Planets::get($_POST['planetid']);
 	}
-	$planet->commit();
-  }
-  else if ($route[1] == 'add' && \count($_POST) > 0 && \array_key_exists('planetEditor', $_POST) && !empty($_POST['planetid'])) {
-	//We need to grab the edited planet and set its parameters. We then need to modify the terrain as need be and commit it.
-	$workingPlanet = Planets::get($_POST['planetid']);
+	else {
+	  $workingPlanet = new Planets();
+	  $workingPlanet->width = $workingPlanet->height = (int)$_POST['size'];
+	}
 	$workingPlanet->name = $_POST['name'];
 	//We need to iterate over each terrain chunk and appropriately put it into the object as needed.
 	for ($i = 0; $i < $workingPlanet->height || $i < $_POST['size']; $i++) {
@@ -57,6 +62,7 @@ else if ($route[0] == 'planets') {
 	//We need to set the width and height to the provided size and then commit it to the database..
 	$workingPlanet->width = $workingPlanet->height = (int)$_POST['size'];
 	$workingPlanet->commit();
+	redirectToHost();
   }
   else if ($route[1] == 'delete') {
 	$success = true;
@@ -89,4 +95,10 @@ else if ($route[0] == 'planets') {
 }
 else if ($route[0] == 'terraintypes') {
   echo \json_encode(Terrains::get());
+}
+else if ($route[0] == 'materialtypes') {
+  echo \json_encode(Materials::get());
+}
+function redirectToHost() {
+  \header('Location: ' . $_SERVER['HTTP_REFERER']);
 }

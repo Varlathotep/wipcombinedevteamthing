@@ -11,6 +11,7 @@ class PlanetTerrains extends Debuggable implements Stored {
   public $x;
   public $y;
   private $_database = null;
+  public $deposit = null;
 
   public function __construct() {
 	$this->_database = Database::getConnection();
@@ -37,6 +38,7 @@ class PlanetTerrains extends Debuggable implements Stored {
 		  $returnedTerrain[$row->y] = [];
 		}
 		$returnedTerrain[$row->y][$row->x] = $row;
+		$row->deposit = Deposits::get($row->refid);
 	  }
 	}
 	$returnedTerrain = [$returnedTerrain];
@@ -48,6 +50,9 @@ class PlanetTerrains extends Debuggable implements Stored {
 	$stmt = $this->_database->prepare('DELETE FROM planetterrains WHERE refid = ?');
 	$stmt->bind_param('i', $this->refid);
 	$stmt->execute();
+	if (\is_array($this->deposit) && \count($this->deposit) > 0) {
+	  $this->deposit[$this->refid]->delete();
+	}
   }
 
   public function update() {
@@ -55,6 +60,14 @@ class PlanetTerrains extends Debuggable implements Stored {
 	$stmt = $this->_database->prepare('UPDATE planetterrains SET terrainid = ?, x = ?, y = ? WHERE refid = ?');
 	$stmt->bind_param('iiii', $this->terrainid, $this->x, $this->y, $this->refid);
 	$stmt->execute();
+	if (\is_array($this->deposit) && \count($this->deposit) > 0) {
+	  $this->deposit[$this->refid]->terrainid = $this->refid;
+	  $this->deposit[$this->refid]->commit();
+	}
+	else if (!\is_array($this->deposit)) {
+	  $this->deposit->terrainid = $this->refid;
+	  $this->deposit->commit();
+	}
   }
 
   public function insert() {
@@ -63,6 +76,13 @@ class PlanetTerrains extends Debuggable implements Stored {
 	$stmt->bind_param('iiii', $this->planetid, $this->terrainid, $this->x, $this->y);
 	$stmt->execute();
 	$this->refid = $this->_database->insert_id;
+	if (\is_array($this->deposit) && \count($this->deposit) > 0) {
+	  $this->deposit[$this->refid]->terrainid = $this->refid;
+	  $this->deposit[$this->refid]->commit();
+	}
+	else if (!\is_array($this->deposit)) {
+	  $this->deposit->terrainid = $this->refid;
+	  $this->deposit->commit();
+	}
   }
 }
-

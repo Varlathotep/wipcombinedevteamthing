@@ -25,12 +25,16 @@
 	</div>
   </div>
   <div id="planetTemplate" class="planetContainer invisible clearfix">
-	<div id="name" class="planetNamePlaque clearfix"></div>
-	<div id="map" class="clearfix"></div>
-	<a id="delete" href="" onclick="return false;">Delete Planet</a> | <a id="edit" href="" onclick="return false;">Edit Planet</a>
-	<input type="hidden" id="index" />
+	<form name="materialEditor" method="post" action="?q=/material/save">
+	  <div id="name" class="planetNamePlaque clearfix"></div>
+	  <div id="map" class="clearfix"></div>
+	  <a id="delete" href="" onclick="return false;">Delete Planet</a> | <a id="edit" href="" onclick="return false;">Edit Planet</a> | <a id="save" href="" onclick="jQuery(this).parent().find('#submit').click(); return false;">Save Materials</a>
+	  <input type="hidden" id="index" />
+	  <input type="hidden" id="planetid" name="planetId" />
+	  <button type="submit" style="display: none;" id="submit"/>
+	</form>
   </div>
   <script src="page/js/standard.js">
   </script>
-</body>
-</html>
+  </body>
+  </html>
